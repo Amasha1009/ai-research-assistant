@@ -9,10 +9,10 @@ def load_pdf(file_path):
 
 
 def split_documents(documents):
-    text_splitter = RecursiveCharacterTextSplitter(
+    splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000,
         chunk_overlap=200
     )
 
-    chunks = text_splitter.split_documents(documents)
+    chunks = splitter.split_documents(documents)
     return chunks

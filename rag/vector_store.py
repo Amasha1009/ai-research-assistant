@@ -1,5 +1,5 @@
 from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 
 
 def create_vector_store(chunks):
@@ -16,7 +16,5 @@ def create_vector_store(chunks):
         embedding=embeddings,
         persist_directory="vectorstore"
     )
-
-    vectorstore.persist()
 
     return vectorstore

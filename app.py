@@ -6,23 +6,28 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("📚 AI Research Assistant")
-st.write("Upload AI research papers and explore them using Agentic AI + RAG.")
+# Sidebar
+with st.sidebar:
+    st.title("📚 AI Research Assistant")
+    st.markdown("---")
 
-st.header("Upload Research Papers")
+    uploaded_files = st.file_uploader(
+        "Upload AI Research Papers",
+        type=["pdf"],
+        accept_multiple_files=True
+    )
 
-uploaded_files = st.file_uploader(
-    "Choose AI research papers (PDF)",
-    type=["pdf"],
-    accept_multiple_files=True
-)
+# Main page
+st.title("AI Research Assistant")
+
+st.write("Welcome! This application helps you analyze Artificial Intelligence research papers using Agentic AI and RAG.")
 
 if uploaded_files:
-    st.success(f"{len(uploaded_files)} file(s) uploaded successfully!")
+    st.success(f"{len(uploaded_files)} paper(s) uploaded.")
 
     st.subheader("Uploaded Papers")
 
     for file in uploaded_files:
         st.write(f"📄 {file.name}")
 else:
-    st.info("Please upload one or more PDF research papers.")
+    st.info("Upload one or more AI research papers from the sidebar.")

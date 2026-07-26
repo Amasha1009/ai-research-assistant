@@ -32,4 +32,12 @@ User Request:
         temperature=0
     )
 
-    return response.choices[0].message.content.strip()
+ 
+
+    task = response.choices[0].message.content.strip().upper()
+
+    # Safety check
+    if task not in ["RESEARCH", "SUMMARY", "COMPARISON"]:
+        task = "RESEARCH"
+
+    return task

@@ -6,6 +6,7 @@ from agents.planner_agent import classify_task
 from agents.research_agent import answer_question
 from agents.summary_agent import summarize_text
 from agents.comparison_agent import compare_papers
+from agents.reflection_agent import reflect_answer
 
 
 class AgentState(TypedDict):
@@ -19,6 +20,7 @@ class AgentState(TypedDict):
 
 def planner_node(state):
     task = classify_task(state["question"])
+
 
     return {
         **state,
@@ -38,6 +40,17 @@ def research_node(state):
         "answer": answer
     }
 
+def reflection_node(state):
+
+    improved_answer = reflect_answer(
+        state["question"],
+        state["answer"]
+    )
+
+    return {
+        **state,
+        "answer": improved_answer
+    }
 
 def summary_node(state):
 
@@ -82,9 +95,9 @@ builder = StateGraph(AgentState)
 
 builder.add_node("planner", planner_node)
 builder.add_node("research", research_node)
+builder.add_node("reflection", reflection_node)
 builder.add_node("summary", summary_node)
 builder.add_node("comparison", comparison_node)
-
 builder.set_entry_point("planner")
 
 builder.add_conditional_edges(
@@ -96,8 +109,9 @@ builder.add_conditional_edges(
         "comparison": "comparison"
     }
 )
+builder.add_edge("research", "reflection")
+builder.add_edge("reflection", END)
 
-builder.add_edge("research", END)
 builder.add_edge("summary", END)
 builder.add_edge("comparison", END)
 

@@ -1,12 +1,14 @@
 from agents.planner_agent import classify_task
 
-queries = [
+questions = [
     "Summarize this paper",
-    "Compare these two papers",
-    "What dataset was used in this paper?"
+    "What dataset was used in this research?",
+    "Compare these two research papers",
+    "Explain the methodology used in this paper"
 ]
 
-for q in queries:
-    print(f"Question: {q}")
-    print("Planner:", classify_task(q))
-    print("-" * 40)
+for q in questions:
+    result = classify_task(q)
+    print(q)
+    print("->", result)
+    print()

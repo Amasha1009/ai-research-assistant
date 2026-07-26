@@ -1,6 +1,9 @@
 import streamlit as st
 from tempfile import NamedTemporaryFile
+
 from rag.ingest import load_pdf, split_documents
+from rag.vector_store import create_vector_store
+from workflow.graph import graph
 
 st.set_page_config(
     page_title="AI Research Assistant",
@@ -27,6 +30,7 @@ st.write(
 
 if uploaded_file:
 
+    # Save uploaded PDF temporarily
     with NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
         tmp.write(uploaded_file.read())
         pdf_path = tmp.name
@@ -36,6 +40,12 @@ if uploaded_file:
 
     # Split into chunks
     chunks = split_documents(documents)
+
+    # Create Vector Store
+    vectorstore = create_vector_store(chunks)
+
+    # Combine all pages into one string
+    full_text = "\n".join(doc.page_content for doc in documents)
 
     st.success("✅ PDF processed successfully!")
 
@@ -50,6 +60,35 @@ if uploaded_file:
     st.subheader("First Chunk Preview")
 
     st.write(chunks[0].page_content)
+
+    st.divider()
+
+    st.subheader("Ask a Question")
+
+    question = st.text_input(
+        "Ask something about the uploaded paper:"
+    )
+
+    if question:
+
+        with st.spinner("🤖 AI is analyzing the paper..."):
+
+            result = graph.invoke(
+                {
+                    "question": question,
+                    "task": "",
+                    "answer": "",
+                    "vectorstore": vectorstore,
+                    "paper1": full_text,
+                    "paper2": ""
+                }
+            )
+
+        st.success("Answer Generated")
+
+        st.subheader("Answer")
+
+        st.markdown(result["answer"])
 
 else:
     st.info("👈 Upload a PDF from the sidebar.")

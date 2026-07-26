@@ -12,7 +12,16 @@ def answer_question(question, vectorstore):
     """
     Answer a question using RAG.
     """
+ # Safety check 1: No question
+    if not question or question.strip() == "":
+        return "Please enter a question."
 
+
+    # Safety check 2: No vector database
+    if vectorstore is None:
+        return "Please upload a research paper first."
+
+    
     docs = retrieve_documents(vectorstore, question)
 
     context = "\n\n".join(doc.page_content for doc in docs)

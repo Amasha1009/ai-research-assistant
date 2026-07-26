@@ -110,9 +110,9 @@ builder.add_conditional_edges(
     }
 )
 builder.add_edge("research", "reflection")
-builder.add_edge("reflection", END)
+builder.add_edge("summary", "reflection")
+builder.add_edge("comparison", "reflection")
 
-builder.add_edge("summary", END)
-builder.add_edge("comparison", END)
+builder.add_edge("reflection", END)
 
 graph = builder.compile()

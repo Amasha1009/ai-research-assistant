@@ -1,44 +1,60 @@
 from openai import OpenAI
 from utils.config import OPENROUTER_API_KEY
 
-
 client = OpenAI(
     api_key=OPENROUTER_API_KEY,
-    base_url="https://openrouter.ai/api/v1",
+    base_url="https://openrouter.ai/api/v1"
 )
 
 
 def reflect_answer(question, answer):
 
-    prompt = f"""
-You are a Reflection Agent.
+    # Safety check: empty answer
+    if not answer or answer.strip() == "":
+        return "No answer was generated. Please try asking another question."
 
-Review the generated answer.
+
+    prompt = f"""
+You are a reflection agent.
+
+Review the answer below.
 
 Question:
 {question}
 
-Generated Answer:
+Answer:
 {answer}
 
-Tasks:
-1. Check whether the answer correctly addresses the question.
-2. Identify missing information.
-3. Improve clarity and accuracy.
-4. Return the improved final answer only.
+Check:
+1. Is the answer relevant?
+2. Is it based on the research paper?
+3. Does it contain unsupported information?
+
+Improve the answer if needed.
+Return only the improved answer.
 """
 
-    response = client.chat.completions.create(
-        model="openrouter/free",
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
-    )
 
-    if response.choices[0].message.content:
-        return response.choices[0].message.content
-    else:
+    try:
+        response = client.chat.completions.create(
+            model="openrouter/free",
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        )
+
+        result = response.choices[0].message.content
+
+        # Safety check: model returns empty response
+        if not result or result.strip() == "":
+            return answer
+
+        return result
+
+
+    except Exception as e:
+        # If reflection fails, return original answer
         return answer

@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 from tempfile import NamedTemporaryFile
 
@@ -11,84 +12,202 @@ st.set_page_config(
     layout="wide"
 )
 
+# ---------------- Session State Initialization ----------------
+if "paper1_id" not in st.session_state:
+    st.session_state.paper1_id = None
+    st.session_state.vectorstore1 = None
+    st.session_state.paper1_text = ""
+    st.session_state.documents1 = []
+    st.session_state.chunks1 = []
+
+if "paper2_id" not in st.session_state:
+    st.session_state.paper2_id = None
+    st.session_state.paper2_text = ""
+    st.session_state.documents2 = []
+
+if "question" not in st.session_state:
+    st.session_state.question = ""
+
+if "answer" not in st.session_state:
+    st.session_state.answer = ""
+
+
+# Helper function to process uploaded PDF to text
+def process_pdf(file_obj):
+    with NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+        tmp.write(file_obj.read())
+        pdf_path = tmp.name
+
+    try:
+        documents = load_pdf(pdf_path)
+        full_text = "\n".join(doc.page_content for doc in documents)
+        return documents, full_text
+    finally:
+        if os.path.exists(pdf_path):
+            os.remove(pdf_path)
+
+
 # ---------------- Sidebar ----------------
 with st.sidebar:
     st.title("📚 AI Research Assistant")
     st.markdown("---")
 
-    uploaded_file = st.file_uploader(
-        "Upload an AI Research Paper",
-        type=["pdf"]
+    uploaded_file1 = st.file_uploader(
+        "Upload Primary Paper (Paper 1)",
+        type=["pdf"],
+        key="pdf1_uploader"
+    )
+
+    uploaded_file2 = st.file_uploader(
+        "Upload Secondary Paper (Paper 2 - Optional for Comparison)",
+        type=["pdf"],
+        key="pdf2_uploader"
     )
 
 # ---------------- Main Page ----------------
 st.title("📚 AI Research Assistant")
+st.write("Analyze and compare Artificial Intelligence research papers using Agentic AI and RAG.")
 
-st.write(
-    "Analyze Artificial Intelligence research papers using Agentic AI and RAG."
-)
+# 1. Process Paper 1
+if uploaded_file1:
+    p1_id = f"{uploaded_file1.name}_{uploaded_file1.size}"
 
-if uploaded_file:
+    if st.session_state.paper1_id != p1_id:
+        with st.spinner("📄 Processing and embedding Paper 1..."):
+            docs1, text1 = process_pdf(uploaded_file1)
+            chunks1 = split_documents(docs1)
+            vectorstore1 = create_vector_store(chunks1)
 
-    # Save uploaded PDF temporarily
-    with NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-        tmp.write(uploaded_file.read())
-        pdf_path = tmp.name
+            st.session_state.vectorstore1 = vectorstore1
+            st.session_state.paper1_text = text1
+            st.session_state.documents1 = docs1
+            st.session_state.chunks1 = chunks1
+            st.session_state.paper1_id = p1_id
 
-    # Load PDF
-    documents = load_pdf(pdf_path)
+    st.success("✅ Paper 1 loaded successfully!")
 
-    # Split into chunks
-    chunks = split_documents(documents)
-
-    # Create Vector Store
-    vectorstore = create_vector_store(chunks)
-
-    # Combine all pages into one string
-    full_text = "\n".join(doc.page_content for doc in documents)
-
-    st.success("✅ PDF processed successfully!")
-
+    # Display Metrics & Preview
     col1, col2 = st.columns(2)
-
     with col1:
-        st.metric("Pages", len(documents))
-
+        st.metric("Paper 1 Pages", len(st.session_state.documents1))
     with col2:
-        st.metric("Chunks", len(chunks))
+        st.metric("Paper 1 Chunks", len(st.session_state.chunks1))
 
-    st.subheader("First Chunk Preview")
+    st.subheader("Paper 1 Preview")
+    if st.session_state.chunks1:
+        st.write(st.session_state.chunks1[0].page_content)
+else:
+    st.session_state.paper1_id = None
+    st.session_state.vectorstore1 = None
+    st.session_state.paper1_text = ""
+    st.session_state.documents1 = []
+    st.session_state.chunks1 = []
 
-    st.write(chunks[0].page_content)
+# 2. Process Paper 2
+if uploaded_file2:
+    p2_id = f"{uploaded_file2.name}_{uploaded_file2.size}"
 
-    st.divider()
+    if st.session_state.paper2_id != p2_id:
+        with st.spinner("📄 Extracting text from Paper 2..."):
+            docs2, text2 = process_pdf(uploaded_file2)
 
-    st.subheader("Ask a Question")
+            st.session_state.paper2_text = text2
+            st.session_state.documents2 = docs2
+            st.session_state.paper2_id = p2_id
 
-    question = st.text_input(
-        "Ask something about the uploaded paper:"
-    )
+    st.success("✅ Paper 2 loaded for comparison!")
+    st.metric("Paper 2 Pages", len(st.session_state.documents2))
 
-    if question:
-
-        with st.spinner("🤖 AI is analyzing the paper..."):
-
-            result = graph.invoke(
-                {
-                    "question": question,
-                    "task": "",
-                    "answer": "",
-                    "vectorstore": vectorstore,
-                    "paper1": full_text,
-                    "paper2": ""
-                }
-            )
-
-        st.success("Answer Generated")
-
-        st.subheader("Answer")
-
-        st.markdown(result["answer"])
+    if st.session_state.documents2:
+        st.subheader("Paper 2 Preview")
+        st.write(st.session_state.documents2[0].page_content)
 
 else:
-    st.info("👈 Upload a PDF from the sidebar.")
+    st.session_state.paper2_id = None
+    st.session_state.paper2_text = ""
+    st.session_state.documents2 = []
+
+st.divider()
+
+# ---------------- Query Execution ----------------
+if st.session_state.paper1_id:
+    st.subheader("Ask a Question or Request Analysis")
+
+    question = st.text_input(
+        "Ask a question, request a summary, or perform a comparison:",
+        key="question"
+    )
+
+    col1, col2 = st.columns(2)
+    with col1:
+        apply = st.button("▶ Apply", use_container_width=True)
+    with col2:
+        clear = st.button("🗑 Clear", use_container_width=True)
+
+    if clear:
+        st.session_state.question = ""
+        st.session_state.answer = ""
+        st.rerun()
+
+    if apply:
+
+        st.session_state.answer = ""
+
+        if not question.strip():
+            st.error("Please enter a question before clicking Apply.")
+        else:
+            comparison_keywords = [
+                "compare",
+                "comparison",
+                "compare paper",
+                "compare papers",
+                "difference",
+                "differences",
+                "versus",
+                "vs"
+            ]
+
+            is_comparison_query = any(
+                word in question.lower()
+                for word in comparison_keywords
+            )
+
+            if is_comparison_query and not st.session_state.paper2_text:
+                st.warning(
+                    "Comparison requires a second paper. "
+                    "Please upload Paper 2."
+                )
+            else:
+                with st.spinner("🤖 AI is analyzing..."):
+                    result = graph.invoke(
+                        {
+                            "question": question,
+                            "task": "",
+                            "answer": "",
+                            "vectorstore": st.session_state.vectorstore1,
+                            "paper1": st.session_state.paper1_text,
+                            "paper2": st.session_state.paper2_text
+                        }
+                    )
+
+                if (
+                    result.get("task") == "COMPARISON"
+                    and not st.session_state.paper2_text
+                ):
+                    st.warning(
+                        "The planner selected COMPARISON but "
+                        "Paper 2 has not been uploaded."
+                    )
+                else:
+                    st.session_state.answer = result.get(
+                        "answer",
+                        "No answer returned."
+                    )
+
+    if st.session_state.answer:
+        st.success("Answer Generated")
+        st.subheader("Answer")
+        st.markdown(st.session_state.answer)
+
+else:
+    st.info("👈 Please upload at least Paper 1 from the sidebar to begin.")

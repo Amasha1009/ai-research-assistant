@@ -129,3 +129,13 @@ Clone repository:
 
 ```bash
 git clone <repository-url>
+
+
+##testing 
+
+The application was tested with:
+- Research queries
+- Paper summarization
+- Paper comparison
+- Empty input validation
+- Missing Paper 2 validation

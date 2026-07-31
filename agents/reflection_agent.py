@@ -57,4 +57,4 @@ Return only the improved answer.
 
     except Exception as e:
         # If reflection fails, return original answer
-        return answer
+        return f"reflection failed: {str(e)}. Original answer: {answer}"

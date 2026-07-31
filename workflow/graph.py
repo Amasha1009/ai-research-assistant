@@ -54,6 +54,12 @@ def reflection_node(state):
 
 def summary_node(state):
 
+    
+    print("=" * 50)
+    print("SUMMARY NODE")
+    print("paper1 characters:", len(state["paper1"]))
+    print("=" * 50)
+
     answer = summarize_text(
         state["paper1"]
     )

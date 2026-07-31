@@ -2,6 +2,7 @@ from openai import OpenAI
 from utils.config import OPENROUTER_API_KEY
 from rag.retrieve import retrieve_documents
 
+
 client = OpenAI(
     api_key=OPENROUTER_API_KEY,
     base_url="https://openrouter.ai/api/v1",
@@ -9,10 +10,12 @@ client = OpenAI(
 
 
 def answer_question(question, vectorstore):
+
     """
     Answer a question using RAG.
     """
- # Safety check 1: No question
+
+    # Safety check 1: No question
     if not question or question.strip() == "":
         return "Please enter a question."
 
@@ -21,34 +24,56 @@ def answer_question(question, vectorstore):
     if vectorstore is None:
         return "Please upload a research paper first."
 
-    
-    docs = retrieve_documents(vectorstore, question)
 
-    context = "\n\n".join(doc.page_content for doc in docs)
+    # Retrieve relevant chunks
+    docs = retrieve_documents(
+        vectorstore,
+        question,
+        k=5
+    )
+
+
+    # Create context
+    context = "\n\n".join(
+        doc.page_content
+        for doc in docs
+    )
+
+
+    # Debug retrieved content
+    print("\n========== RETRIEVED CONTEXT ==========")
+    print(context[:3000])
+    print("=======================================\n")
+
 
     prompt = f"""
 You are an AI Research Assistant.
 
-Use ONLY the information below.
+Answer the question using ONLY the context below.
 
 Context:
 {context}
 
+
 Question:
 {question}
 
-If the answer is not present in the context, say:
+
+If the answer is not available in the context, say:
 "I could not find the answer in the uploaded paper."
 """
 
-    response = client.chat.completions.create(
+    try:
+        response = client.chat.completions.create(
         model="openrouter/free",
         messages=[
             {
                 "role": "user",
-                "content": prompt
+                "content": prompt,
             }
         ]
     )
+        return response.choices[0].message.content
 
-    return response.choices[0].message.content
+    except Exception as e:
+     return f"Error generating answer: {str(e)}"

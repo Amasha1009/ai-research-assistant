@@ -25,11 +25,14 @@ if "paper2_id" not in st.session_state:
     st.session_state.paper2_text = ""
     st.session_state.documents2 = []
 
-if "question" not in st.session_state:
-    st.session_state.question = ""
+if "question_input" not in st.session_state:
+    st.session_state.question_input = ""
 
 if "answer" not in st.session_state:
     st.session_state.answer = ""
+
+if "task" not in st.session_state:
+    st.session_state.task = ""
 
 
 # Helper function to process uploaded PDF to text
@@ -135,7 +138,7 @@ if st.session_state.paper1_id:
 
     question = st.text_input(
         "Ask a question, request a summary, or perform a comparison:",
-        key="question"
+        key="question_input"
     )
 
     col1, col2 = st.columns(2)
@@ -147,6 +150,11 @@ if st.session_state.paper1_id:
     if clear:
         st.session_state.question = ""
         st.session_state.answer = ""
+        st.session_state.task = ""
+        
+        if "question" in st.session_state:
+                del st.session_state["question_input"]
+        
         st.rerun()
 
     if apply:
@@ -204,7 +212,23 @@ if st.session_state.paper1_id:
                         "No answer returned."
                     )
 
-    if st.session_state.answer:
+                    st.session_state.task = result.get(
+                        "task",
+                        "Unknown"
+                    )
+
+    if st.session_state.task:
+
+        st.subheader("Task Selected")
+
+        st.info(st.session_state.task)
+
+if st.session_state.answer:
+
+    if st.session_state.answer.startswith("Error"):
+        st.error(st.session_state.answer)
+        
+    else:
         st.success("Answer Generated")
         st.subheader("Answer")
         st.markdown(st.session_state.answer)

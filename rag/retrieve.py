@@ -1,8 +1,9 @@
-def retrieve_documents(vectorstore, query, k=3):
-    """
-    Retrieve the most relevant document chunks.
-    """
+def retrieve_documents(vectorstore, query, k=5):
 
-    results = vectorstore.similarity_search(query, k=k)
+    results = vectorstore.similarity_search(
+        query,
+        k=k
+    )
 
-    return results
+   
+    return results 

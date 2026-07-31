@@ -31,8 +31,8 @@ Compare them using these headings:
 
 Return the comparison in Markdown format.
 """
-
-    response = client.chat.completions.create(
+    try:
+        response = client.chat.completions.create(
         model="openrouter/free",
         messages=[
             {
@@ -43,4 +43,7 @@ Return the comparison in Markdown format.
         temperature=0.3
     )
 
-    return response.choices[0].message.content
+        return response.choices[0].message.content
+
+    except Exception as e:
+        return f"Comparison failed: {str(e)}"

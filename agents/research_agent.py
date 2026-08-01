@@ -65,7 +65,7 @@ If the answer is not available in the context, say:
 
     try:
         response = client.chat.completions.create(
-        model="openrouter/free",
+       model="meta-llama/llama-3.3-8b-instruct:free",
         messages=[
             {
                 "role": "user",

@@ -110,32 +110,105 @@ Purpose:
 7. LLM generates answer
 
 
+Upload PDF
+     │
+     ▼
+Load PDF
+     │
+     ▼
+Split into Chunks
+     │
+     ▼
+Embeddings
+     │
+     ▼
+Chroma Vector Database
+     │
+     ▼
+Similarity Search
+     │
+     ▼
+LLM
+     │
+     ▼
+Answer
+
 ---
 
 # AI Models Used
 
-| Task | Model | Provider |
-|---|---|---|
-| Research Question Answering | openrouter/free | OpenRouter |
-| Summarization | llama-3.3-70b-versatile | Groq |
-| Reflection | OpenRouter model | OpenRouter |
+
+| Task       |  Model            
+| ---------- | ----------------------- |
+| Planner    | Groq Llama 3.1 8B       | 
+| Research   | OpenRouter Llama 3.3 8B | 
+| Summary    | Groq Llama 3.3 70B      | 
+| Comparison | Groq Llama 3.3 70B      | 
+| Reflection | Groq Llama 3.3 70B      |
 
 
 ---
 
 # Installation
 
-Clone repository:
+
+## Clone repository:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/Amasha1009/ai-research-assistant.git
+
+cd ai-research-assistant
+```
+
+---
 
 
-##testing 
 
-The application was tested with:
+# How to Run Locally
+
+After installation:
+
+## Running the Application
+
+Create a `.env` file in the project root with your API keys:
+
+
+GROQ_API_KEY=your_groq_api_key
+OPENROUTER_API_KEY=your_openrouter_api_key
+
+Install dependencies:
+    pip install -r requirements.txt
+
+Run the Streamlit application:
+    streamlit run app.py
+
+---
+
+# Testing
+
+the application was tested with:
 - Research queries
 - Paper summarization
 - Paper comparison
 - Empty input validation
 - Missing Paper 2 validation
+
+---
+
+# Live Demo 
+
+```bash
+Streamlit app : https://ai-research-assistant-spow9sfgcqu7xe78rtafqe.streamlit.app/
+
+```
+---
+
+# GitHub Repository Link
+
+```bash
+
+https://github.com/Amasha1009/ai-research-assistant
+
+
+
+---

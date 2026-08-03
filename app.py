@@ -8,8 +8,6 @@ from workflow.graph import graph
 
 from utils.config import GROQ_API_KEY, OPENROUTER_API_KEY
 
-st.write("Groq loaded:", GROQ_API_KEY is not None)
-st.write("OpenRouter loaded:", OPENROUTER_API_KEY is not None)
 
 
 st.set_page_config(
